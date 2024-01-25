@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import colors as mcolors
 from PIL import Image, ImageColor
 
 # Task 3a
@@ -9,13 +10,13 @@ picture = Image.open(r"data\DIP3E_Original_Images_CH02\Fig0207(a)(gray level ban
 picture.show()
 
 # different to second method whisch allready adds some color 
-# or use plt.imshow() and set cmap to grey
+# or use plt.imshow() and set cmap = gray
 plt.imshow(picture)
 plt.show()
 
 picture_array = np.array(picture)
-# Testing
-#print(picture_array)
+# solution
+# use np.asarray
 
 mid_of_picture = len(picture_array[:])/2
 # better option to use may be 
@@ -28,6 +29,7 @@ mid_of_picture = len(picture_array[:])/2
 
 x_values = np.arange(0 , len(picture_array[0][:]), step = 1)
 # np.arange returns intervall [start, stop)
+# use np.linspace for x values
 # take width of image as x-values
 # better option again may be np.shape for number of columns
 
@@ -38,6 +40,8 @@ plt.plot(x_values, y_values)
 plt.xlabel("Pixel")
 plt.ylabel("Intenisty")
 plt.show()
+# solution:
+# use fig, ax = plt.subplot() for plotting pictures next to each other
 
 unique_values_in_array = len(np.unique(picture_array))
 print("Unique values in Image:", unique_values_in_array)
@@ -54,9 +58,18 @@ rows, columns = shape_of_array
 # Task 3c
 print("\n Task 3c")
 
-grey_scale = np.unique(picture_array)
+new_colormap = mcolors.ListedColormap(["green", "red", "orange", "yellow", "pink", "black"])
+
+plt.imshow(picture_array, cmap = new_colormap)
+plt.show()
+
+
+""" 
+slow version
 
 colored_picture_array = [[0]*columns]*rows
+
+grey_scale = np.unique(picture_array)
 
 band_one = ImageColor.getrgb("green")
 band_two = ImageColor.getrgb("red")
@@ -85,6 +98,8 @@ for row in range(rows):
 #colored_picture_array = np.array(colored_picture_array)
 
 plt.imshow(colored_picture_array)
+"""
+
 plt.savefig("exercises\exercise_01\colormap.png")
 plt.show()
 
