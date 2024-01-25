@@ -54,7 +54,6 @@ rows, columns = shape_of_array
 # Task 3c
 print("\n Task 3c")
 
-
 grey_scale = np.unique(picture_array)
 
 colored_picture_array = [[0]*columns]*rows
@@ -81,6 +80,7 @@ for row in range(rows):
             colored_picture_array[row][column] = band_five
         elif picture_array[row][column] == grey_scale[5]:
             colored_picture_array[row][column] = band_six
+        # better use kind of switch-case  dictonary
 
 #colored_picture_array = np.array(colored_picture_array)
 
@@ -88,58 +88,8 @@ plt.imshow(colored_picture_array)
 plt.savefig("exercises\exercise_01\colormap.png")
 plt.show()
 
-
-"""
-band_one = ImageColor.getrgb("green")
-band_two = ImageColor.getrgb("red")
-band_three = ImageColor.getrgb("orange")
-band_four = ImageColor.getrgb("yellow")
-band_five = ImageColor.getrgb("pink")
-band_six = ImageColor.getrgb("black")
-
-print(band_one)
-print(np.array([band_one]))
-
-color_bands = np.array([band_one, band_two, band_three, band_four, band_five, band_six])
-
-number_of_rows = shape_of_array[0]
-number_of_columns = shape_of_array[1]
-# should have done this earlier 
-
-colormap = cm.get_cmap(picture_array)
-print(colormap)
-
-def change_color(pixel):
-    switch_case = {
-        grey_scale[0] : band_one,
-        grey_scale[1] : band_two,
-        grey_scale[2] : band_three,
-        grey_scale[3] : band_four,
-        grey_scale[4] : band_five,
-        grey_scale[5] : band_six
-        }    
-    print(switch_case.get(pixel))              
-    return(switch_case.get(pixel))
-    # here use of new match feature is possible
-color_picture_array = picture_array
-
-print(grey_scale)
-print(picture_array)
-
-color_picture_array = np.where(picture_array[0] != grey_scale[0], picture_array[0], np.array([band_one]))
-
-#for row in range(number_of_rows):
-#    for column in range(number_of_columns):
-#        change_color(picture_array[row, column])
-
-print(color_picture_array)
-
-"""
-
 # there may be a prebuild function for getting a colormap which is better (faster?)
 # maybe use matplotlib.image and use cmap argument
-
-
 
 # Task 3d
 print("\n Task 3d")
