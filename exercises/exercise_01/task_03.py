@@ -1,6 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib import colormaps as cm
 from PIL import Image, ImageColor
 
 # Task 3a
@@ -52,8 +51,6 @@ print("Shape of array (equals Image seize):", shape_of_array)
 
 # Task 3c
 print("\n Task 3c")
-
-
 
 
 """

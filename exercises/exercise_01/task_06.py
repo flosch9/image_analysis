@@ -45,11 +45,11 @@ def rotate_by_rad(rad, image):
     return(rotated_image)
 #test
 
-rotated_image = rotate_by_rad(0.5, picture_array)
+#rotated_image = rotate_by_rad(0.5, picture_array)
 
 plt.imshow(picture, cmap='gray', vmin=0, vmax=255)
 plt.show()
-plt.imshow(rotated_image, cmap='gray', vmin=0, vmax=255)
+#plt.imshow(rotated_image, cmap='gray', vmin=0, vmax=255)
 plt.show()
 
 # Task 6c
