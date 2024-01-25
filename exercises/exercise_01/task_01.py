@@ -11,12 +11,18 @@ print(A)
 print("\n Task 1b")
 A[:,0] = np.ones(7)
 print(A)
+# solution, a bit better:
+# A[:,0] = 1
 
 A[:,1] = 2*np.ones(7)
 print(A)
+# solution, a bit better:
+# A[:,1] = 2
 
 A[:,2] = 3*np.ones(7)
 print(A)
+# solution, a bit better:
+# A[:,2] = 3
 
 A[4,6] = 5
 A[5,6] = 8
@@ -25,7 +31,8 @@ print(A)
 
 # Task 1c
 print("\n Task 1c")
-print(np.unique(A))
+unique_values = np.unique(A)
+print("Unique values of Matrix A", unique_values)
 
 # Task 1d
 print("\n Task 1d")
@@ -36,11 +43,15 @@ print("\n Task 1d")
 # in which range the numbers should be
 B = np.random.rand(8,7)
 print(B)
+# solution, a bit better, gives random integers:
+# B = np.random.randint(0,10, size=(8,7))
 
 # Task 1e
 print("\n Task 1e")
 C = np.matmul(A,B)
 print(C)
+# solution, matrix mutiplication, a bit quicker
+# C = A@B 
 
 # Task 1f
 print("\n Task 1f")
@@ -64,4 +75,5 @@ print("\n Task 1g")
 
 df = pd.DataFrame(A)
 df.to_csv("exercises\exercise_01\matrix_A.csv", index=False, header=False)
-
+# solution another options to save
+# np.savetxt()
