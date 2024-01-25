@@ -100,14 +100,14 @@ for row in range(rows):
 plt.imshow(colored_picture_array)
 """
 
-plt.savefig("exercises\exercise_01\colormap.png")
-plt.show()
-
 # there may be a prebuild function for getting a colormap which is better (faster?)
 # maybe use matplotlib.image and use cmap argument
 
 # Task 3d
 print("\n Task 3d")
+
+plt.savefig("exercises\exercise_01\colormap.png")
+plt.show()
 
 
 
