@@ -11,21 +11,22 @@ A_param = 1
 L_zero = 0.2
 
 plt.plot(r, transformation_a(r, A_param, L_zero))
-plt.hlines(A_param/2, 0, L_zero, linestyles = "dashed")
-plt.vlines(L_zero, 0, A_param/2, linestyles = "dashed")
+plt.hlines(A_param/2, 0, L_zero, linestyles = "dashed", color = "black")
+plt.vlines(L_zero, 0, A_param/2, linestyles = "dashed", color = "black")
 plt.show()
 
 
-B_param = 1
-L_zero = 0.2
+B_param = 2
+L_zero = 0.3
 
 def transformation_b(r, B = 1, L_zero = 1):
-    alpha = - np.log(1/2)/np.sqrt(L_zero)
-    return(B * (1 - np.exp(-alpha*r**2)))
+    alpha = - np.log(1/(2))/L_zero**2
+    c = 1
+    return(B * (1 - c*np.exp(- alpha*r**2)))
 
 
-plt.hlines(B_param/2, 0, L_zero, linestyles = "dashed")
-plt.vlines(L_zero, 0, B_param/2, linestyles = "dashed")
+plt.hlines(B_param/2, 0, L_zero, linestyles = "dashed", color = "black")
+plt.vlines(L_zero, 0, B_param/2, linestyles = "dashed", color = "black")
 plt.plot(r, transformation_b(r, B_param, L_zero))
 plt.show()
 
