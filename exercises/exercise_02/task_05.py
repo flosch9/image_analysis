@@ -14,5 +14,5 @@ def stretch_transformation(array_of_intensity_values):
 
     slope = (max_intensity - 1) / range_intensity
 
-    s = array_of_intensity_values * slope - min_intensity
+    s = array_of_intensity_values * slope - min_intensity * slope
     return(s)
