@@ -15,7 +15,7 @@ def gamma_transformation(array_of_gamma, plot_gammatransformation = True, adabt_
 
         s = c*r**gamma
         
-        print("Gammavalue: {}".format(gamma))
+        print("\nGammavalue: {}".format(gamma))
         print("Range for r: ({}, {})".format(min(r), max(r)))
         print("Range for s: ({}, {})".format(min(s), max(s)))
 
