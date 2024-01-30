@@ -14,7 +14,9 @@ def gamma_transformation(array_of_gamma, plot_gammatransformation = True, adabt_
     for gamma in array_of_gamma:
 
         if adabt_range == True:
-            c = 255/np.amax(r**gamma)
+            #c = 255/np.amax(r**gamma)
+            #error here: c = 255**(1-gamma) !!!
+            c = 255**(1-gamma)
         elif adabt_range == False:
             c = 1
 
@@ -50,10 +52,10 @@ image = Image.open("data\DIP3E_Original_Images_CH03\Fig0308(a)(fractured_spine).
 transformed_image = gamma_transformation(gamma, plot_gammatransformation = False, adabt_range = False, image = image)
 
 fig, axes = plt.subplots(nrows=1, ncols=len(gamma)+1, figsize=(8, 5))
-axes[0].imshow(image, cmap = "gray")
+axes[0].imshow(image, cmap = "gray", vmin=0, vmax=255)
 axes[0].set_title("Original")
 for i, gamma in enumerate(gamma):
-    axes[i+1].imshow(transformed_image[i], cmap = "gray")
+    axes[i+1].imshow(transformed_image[i], cmap = "gray", vmin=0, vmax=255)
     axes[i+1].set_title("$\gamma$ = {}".format(gamma))
 fig.tight_layout()
 plt.show()
@@ -69,10 +71,10 @@ gamma_transformation(gamma, plot_gammatransformation = True, adabt_range = True)
 transformed_image = gamma_transformation(gamma, plot_gammatransformation = False, adabt_range = True, image = image)
 
 fig, axes = plt.subplots(nrows=1, ncols=len(gamma)+1, figsize=(8, 5))
-axes[0].imshow(image, cmap = "gray")
+axes[0].imshow(image, cmap = "gray", vmin=0, vmax=255)
 axes[0].set_title("Original")
 for i, gamma in enumerate(gamma):
-    axes[i+1].imshow(transformed_image[i], cmap = "gray")
+    axes[i+1].imshow(transformed_image[i], cmap = "gray", vmin=0, vmax=255)
     axes[i+1].set_title("$\gamma$ = {}".format(gamma))
 
 fig.tight_layout()
