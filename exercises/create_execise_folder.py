@@ -80,7 +80,7 @@ for task in range(1, number_of_tasks+1):
             file.write("\n# code here")
             file.write("\n")
             file.write("\nend_time = time.time()")
-            file.write("\nprint(\"Completetd in {}s.\".format(start_time-end_time))")
+            file.write("\nprint(\"Completetd in {}s.\".format(end_time-start_time))")
 
     print("\nCreated file {} with {} subtasks".format(filename, number_subtasks[task-1]))
 

@@ -43,7 +43,6 @@ plt.show()
 
 image = Image.open("data\DIP3E_Original_Images_CH03\Fig0310(b)(washed_out_pollen_image).tif")
 
-image_transformed = s_curve_transformation_rgbrange(np.array(image),r_zero = 0.5, E = 2)
 # needs big values of r_zero because meant for range 0 to 1, 125 equals nearly the 0.5 in # range 0 to 255 like 0.5 did in range 0 to 1
 
 fig, axes = plt.subplots(nrows=1, ncols=len(values_of_E)+1, figsize=(8, 5))
