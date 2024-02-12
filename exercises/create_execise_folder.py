@@ -6,8 +6,8 @@ import os, time
 #                                                                       #
 #########################################################################
 
-exercise_number = "03" 
-number_of_tasks = 6
+exercise_number = "04" 
+number_of_tasks = 5
 number_subtasks = []
 
 #########################################################################
@@ -85,4 +85,4 @@ for task in range(1, number_of_tasks+1):
     print("\nCreated file {} with {} subtasks".format(filename, number_subtasks[task-1]))
 
 end_time = time.time()
-print("Completetd in {}s.".format(start_time-end_time))
+print("Completetd in {}s.".format(end_time-start_time))
