@@ -6,9 +6,9 @@ import os, time
 #                                                                       #
 #########################################################################
 
-exercise_number = "04" 
-number_of_tasks = 5
-number_subtasks = []
+exercise_number = "05" 
+number_of_tasks = 2
+number_subtasks = [4,2]
 
 #########################################################################
 #                                                                       #
