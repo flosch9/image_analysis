@@ -60,9 +60,13 @@ def geometric_filter(image, kernel_size):
     for row in range(new_size_rows):
         for column in range(new_size_columns):
             
+            
+            
             submask = image_array[row:row+kernel_size, column:column+kernel_size]
             # this is important, else the product gives soemthing wrong as output
             submask = submask.astype(float)
+            # for better runtime optimize whith taking ln on both sides
+            # and then use convolve2d insted of 2 for loops
             product = np.prod(submask)
             filter_area = kernel_size * kernel_size
             new_value = product**(1/filter_area)
@@ -115,7 +119,6 @@ kernel_size = int(input())
 image_names = ["data\DIP3E_Original_Images_CH05\Fig0507(b)(ckt-board-gauss-var-400).tif",
 "data\DIP3E_Original_Images_CH05\Fig0508(a)(circuit-board-pepper-prob-pt1).tif"]
 
-"""
 for image_name in image_names:
     image = Image.open(image_name)
 
@@ -142,7 +145,6 @@ for image_name in image_names:
     axs[1,1].imshow(harmonic_filter(image, kernel_size), cmap="gray", vmin = 0, vmax = 255)
     plt.tight_layout()
     plt.show()
-"""
 
 end_time = time.time()
 print("Completetd in {}s.".format(end_time-start_time))

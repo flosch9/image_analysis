@@ -15,7 +15,12 @@ from scipy import ndimage
 print("\nTask 1a")
 start_time = time.time()
 
-# code here
+"""
+High pass filter: supressing low frequencies and let high frequencies signasl passing
+in images: "frequiencies" = edges in an image
+in physical domain for example laplacian filter
+in fourier domain for example inverse gaussian filter (1 - gauss) or square multiplication mask
+"""
 
 end_time = time.time()
 print("Completetd in {}s.".format(end_time-start_time))
@@ -27,7 +32,9 @@ print("Completetd in {}s.".format(end_time-start_time))
 print("\nTask 1b")
 start_time = time.time()
 
-# code here
+"""
+Filtering in spatial domain is faster than in fourier.
+"""
 
 end_time = time.time()
 print("Completetd in {}s.".format(end_time-start_time))
