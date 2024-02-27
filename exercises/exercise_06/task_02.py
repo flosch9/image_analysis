@@ -84,6 +84,8 @@ def rgb_to_hsi(rgb_image):
     for row in range(rows):
         for column in range(columns):
             r,g,b = rgb_image[row,column,:]/255 # represent in range 0 to 1
+
+            # normalization f rgb fucked up a bot 
             
             theta = np.arccos((0.5*((r-g)+(r-b)))/(np.sqrt((r-g)**2 + (r-b)*(g-b)) + 1e-8)) #produces a warning overflow/ dividing by zero
             # lasz term with 1e-8 for not getting a warning
