@@ -6,6 +6,7 @@ import skimage
 import time
 from PIL import Image 
 from scipy import ndimage
+from scipy import signal
 
 #########################################################################
 #########################################################################
@@ -14,6 +15,8 @@ from scipy import ndimage
 #                                                                       #
 #########################################################################
 #########################################################################
+
+"""
 
 print("\nTask 4 Part A")
 # for measuremnt of runtime of this section
@@ -64,10 +67,10 @@ plt.close()
 #TODO here
 
 plt.imshow(np.amax(img_PET, axis = 1), cmap = "gray", vmax=np.amax(img_PET)/3)
-plt.show()
+#plt.show()
 plt.imshow(np.amax(img_PET, axis = 2), cmap = "gray", vmax=np.amax(img_PET)/2)
-plt.show()
-
+#plt.show()
+plt.close()
 
 # measuremnt of runtime of this section
 end_time = time.time()
@@ -90,12 +93,85 @@ start_time = time.time()
 A = np.load("home_exam\medicalimages.npz")
 sinogram = A["sinogram"]
 
+#########################################################################
+#                               1                                       #
+#########################################################################
+# TODO label axis
+plt.imshow(sinogram, cmap = "gray")
+#plt.show()
 
+
+#########################################################################
+#                               2                                       #
+#########################################################################
+# TODO label axis
+
+fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(8, 7))
+fig.suptitle("Backtronsformation noise")
+
+axs[0].set_title("Original Backtransformation")
+axs[0].imshow(skimage.transform.iradon(sinogram), cmap = "gray")
+axs[1].set_title("No filter")
+axs[1].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20), filter_name = None), cmap = "gray")
+axs[2].set_title("Ramp filter")
+axs[2].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20), filter_name = "ramp"), cmap = "gray")
+fig.tight_layout()
+#plt.show()
+plt.close()
+
+#########################################################################
+#                               3                                       #
+#########################################################################
+#TODO
+
+#########################################################################
+#                               4                                       #
+#########################################################################
+
+fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(8, 7))
+fig.suptitle("With noise")
+
+axs[0].set_title("No filter")
+axs[0].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20, size = sinogram.shape), filter_name = None), cmap = "gray")
+axs[1].set_title("Ramp filter")
+axs[1].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20, size = sinogram.shape), filter_name = "ramp"), cmap = "gray")
+axs[2].set_title("Cosine filter")
+axs[2].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20, size = sinogram.shape), filter_name = "cosine"), cmap = "gray")
+fig.tight_layout()
+#plt.show()
+plt.close()
+
+
+#########################################################################
+#                               5                                       #
+#########################################################################
+# TODO
+
+
+#########################################################################
+#                               6                                       #
+#########################################################################
+fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(8, 7))
+fig.suptitle("Selected area")
+
+#TODO better code
+
+axs[0].set_title("No filter")
+axs[0].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20, size = sinogram.shape), filter_name = None)[200:400,50:200], cmap = "gray")
+axs[1].set_title("Ramp filter")
+axs[1].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20, size = sinogram.shape), filter_name = "ramp")[200:400,50:200], cmap = "gray")
+axs[2].set_title("Cosine filter")
+axs[2].imshow(skimage.transform.iradon(sinogram+np.random.rayleigh(scale = 20, size = sinogram.shape), filter_name = "cosine")[200:400,50:200], cmap = "gray")
+fig.tight_layout()
+#plt.show()
+plt.close()
 
 
 # measuremnt of runtime of this section
 end_time = time.time()
 print("Completetd in {}s.".format(end_time-start_time))
+
+"""
 
 #########################################################################
 #########################################################################
@@ -113,6 +189,39 @@ start_time = time.time()
 A = np.load("home_exam\medicalimages.npz")
 
 img_dPET = A["img_dPET"]
+
+#########################################################################
+#                               1                                       #
+#########################################################################
+
+print(img_dPET.shape)
+
+#TODO check if right timestep
+plt.imshow(np.amax(img_dPET[0,:,:,:], axis = 1), cmap = "gray")
+plt.show()
+
+#########################################################################
+#                               2                                       #
+#########################################################################
+
+def mean_filter_3d(cube_3d, kernelsize):
+    #filtered_3dcube = np.zeros(cube_3d.shape)
+    kernel = np.ones((kernelsize,kernelsize,kernelsize))/(kernelsize**3)
+    
+    filtered_3dcube = signal.convolve(cube_3d, kernel, method = "direct")
+    # following only works with one d arrays
+    #filtered_3dcube = np.convolve(cube_3d, kernel, mode = "valid")
+
+
+    return(filtered_3dcube)
+
+
+plt.imshow(np.amax(mean_filter_3d(img_dPET[2,:,:,:], 7), axis =1), cmap = "gray")
+plt.show()
+
+#########################################################################
+#                               3                                       #
+#########################################################################
 
 
 

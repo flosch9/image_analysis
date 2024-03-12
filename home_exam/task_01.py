@@ -79,8 +79,25 @@ plot_image_with_hists(image_box_foreground,"Selected region of foreground")
 #                               2                                       #
 #########################################################################
 
-def hist_equlize():
-    return()
+#def hist_equalize():
+#    return()
+
+def hist_equalize(image):
+    new_image = np.zeros(image.shape)
+    for channel in range(3):
+        hist, _ = np.histogram(image[:,:,channel].flatten(), 256, [0, 255])
+        cdf = hist.cumsum()
+        cdf_norm = ((cdf - cdf.min()) * 255) / (cdf.max() - cdf.min())
+        channel_new = cdf_norm[image[:,:,channel].flatten()]
+        new_image[:,:,channel] = np.reshape(channel_new, image[:,:,channel].shape)
+    return(new_image)
+
+
+plot_image_with_hists(hist_equalize(image), "Whole image with histogram equalization.")
+plot_image_with_hists(hist_equalize(image_box_aurora), "Aurora region with histogram equalization.")
+plot_image_with_hists(hist_equalize(image_box_foreground), "Foreground image with histogram equalization.")
+
+
 
 #########################################################################
 #                               3                                       #
