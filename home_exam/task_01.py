@@ -87,9 +87,9 @@ def plot_image_with_hists(image, maintitel, title1 = "Image", title2 = "Red chan
     
     return()
 
-#plot_image_with_hists(image,"Original image")
-#plot_image_with_hists(image_box_aurora,"Selected region of aurora")
-#plot_image_with_hists(image_box_foreground,"Selected region of foreground")
+plot_image_with_hists(image,"Original image")
+plot_image_with_hists(image_box_aurora,"Selected region of aurora")
+plot_image_with_hists(image_box_foreground,"Selected region of foreground")
 
 
 #########################################################################
@@ -151,6 +151,8 @@ def hsi_to_rgb(hsi_image):
 
     return(rgb_image)
 
+
+# exercise 3 equalizatiojn
 def hist_equalize(image):
     # takes rgb image as input and gives rgb image as output
 
@@ -190,13 +192,16 @@ def _hist_equalize(image):
 
 
 equalized_image = hist_equalize(image)
-equalized_image_box_aurora = hist_equalize(image_box_aurora)
-equalized_image_box_foreground = hist_equalize(image_box_foreground)
+#equalized_image_box_aurora = hist_equalize(image_box_aurora)
+#equalized_image_box_foreground = hist_equalize(image_box_foreground)
+
+equalized_image_box_aurora = select_image_box(equalized_image, (260,60), (300,1000))
+equalized_image_box_foreground = select_image_box(equalized_image, (630,100), (150,1000))
 
 
-#plot_image_with_hists(equalized_image, "Whole image with histogram equalization.")
-#plot_image_with_hists(equalized_image_box_aurora, "Aurora region with histogram equalization.")
-#plot_image_with_hists(equalized_image_box_foreground, "Foreground image with histogram equalization.")
+plot_image_with_hists(equalized_image, "Whole image with histogram equalization.")
+plot_image_with_hists(equalized_image_box_aurora, "Aurora region with histogram equalization.")
+plot_image_with_hists(equalized_image_box_foreground, "Foreground image with histogram equalization.")
 
 
 
@@ -230,9 +235,9 @@ hsi_image = rgb_to_hsi(image)
 hsi_image_box_aurora = rgb_to_hsi(image_box_aurora)
 hsi_image_box_foreground = rgb_to_hsi(image_box_foreground)
 
-#plot_image_with_hists(hsi_image,"To hsi converted image", "HSI-Image", "H Channel", "S Channel", "I channel")
-#plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image", "HSI-Image", "H Channel", "S Channel", "I channel")
-#plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image", "HSI-Image", "H Channel", "S Channel", "I channel")
+plot_image_with_hists(hsi_image,"To hsi converted image", "HSI-Image", "H Channel", "S Channel", "I channel")
+plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image", "HSI-Image", "H Channel", "S Channel", "I channel")
+plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image", "HSI-Image", "H Channel", "S Channel", "I channel")
 
 
 
@@ -276,6 +281,9 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
     mean = np.mean(foreground_image, axis=(0, 1))
     print(np.amax(foreground_image)) # fix this for hsi image
     print(np.amin(foreground_image))
+
+    
+
     print(foreground_image.reshape(-1, 3).shape)
 
     inv_covariance = np.linalg.inv(covariance)
@@ -289,8 +297,14 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
         for j in range(whole_image.shape[1]):
             pixel = whole_image[i, j]
             difference = pixel - mean
-            dist = np.sqrt(np.dot(np.dot(difference.T, inv_covariance), difference))
+            # definition of distance sqrt
+            dist = (np.dot(np.dot(difference.T, inv_covariance), difference))
             distance[i, j] = dist
+
+    print("\nDistance")
+    print(distance.shape)
+    print(np.amax(distance)) # fix this for hsi image
+    print(np.amin(distance))
 
     ####
 
