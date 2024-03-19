@@ -26,17 +26,22 @@ start_time = time.time()
 # code here
 
 f = np.array([[2,5,7],
-             [1,7,9],
-             [3,3,1]])
+              [1,7,9],
+              [3,3,1]])
 
 # 180 degree flipped
-g_one = np.array([[0,0,0],
-                 [0,2,0],
-                 [1,0,1]])
+g_one = np.array([[1,0,1],
+                  [0,2,0],
+                  [0,0,0]])
 
 g_two = np.array([[0,1,0],
-                [1,1,1],
-                [0,1,0]])
+                  [1,1,1],
+                  [0,1,0]])
+
+
+def flip_180(filter):
+    
+    return(flipped_filter)
 
 f_padding_one = np.pad(f, 1)
 

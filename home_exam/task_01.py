@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 import matplotlib.colors as mcolors
 import cv2 as cv
 import skimage
@@ -31,9 +32,39 @@ image = np.asarray(Image.open(image_name))
 
 print("Size of image:", image.shape)
 
+def select_image_box(image, anchor : tuple, size : tuple , savename = None):
+
+    if anchor[0]+size[0]>image.shape[0] or anchor[1]+size[1]>image.shape[1]:
+        print("Selected anchor or box size is not within the image.\nImage has size {}".format(image.shape))
+        pass
+    
+    selected_image_box = image[anchor[0]:anchor[0]+size[0], anchor[1]:anchor[1]+size[1]]
+
+
+    box_anchor = (anchor[1], anchor[0])
+
+    fig, axs = plt.subplots(nrows=2, ncols=1, figsize=(8, 7))
+    fig.suptitle("Original Image with selected box")
+
+    axs[0].set_title("Image with selected area")
+    axs[0].imshow(image)
+    axs[0].add_patch(Rectangle(box_anchor,size[1],size[0],linewidth=1,edgecolor='r',facecolor='none'))
+    axs[1].set_title("Selected area")
+    axs[1].imshow(selected_image_box)#.resize(image.shape))
+    fig.tight_layout()
+    plt.show()
+
+
+
+    return(selected_image_box)
+
 # select two boxes just estimate the values based on the image size and looking at it
-image_box_aurora = image[0:600,0:1200,:]
-image_box_foreground = image[650:800,0:1000,:]
+
+
+# first tuple is anchor (y,x) on the upper left corner of the selected box
+# second tuple is height and width (delta_y, delta_x) of the selected box
+image_box_aurora = select_image_box(image, (260,60), (300,1000))
+image_box_foreground = select_image_box(image, (630,100), (150,1000))
 
 # get histograms of color image
 # TODO check color range is it 255?
@@ -82,6 +113,7 @@ plot_image_with_hists(image_box_foreground,"Selected region of foreground")
 #def hist_equalize():
 #    return()
 
+# pre implemented functions (e.g. cv2) are also fine
 def hist_equalize(image):
     new_image = np.zeros(image.shape)
     for channel in range(3):
@@ -103,9 +135,35 @@ plot_image_with_hists(hist_equalize(image_box_foreground), "Foreground image wit
 #                               3                                       #
 #########################################################################
 
+# pre implemented functions (e.g. cv2) are also fine
 def rgb_to_hsi(rgb_image):
-    hsi_image = 1
+    '''Function to convert an RGB image to an HSI image, from the exercises'''
+    ## Scale the image down to the range [0,1]
+    R,G,B = rgb_image[:,:,0],rgb_image[:,:,1],rgb_image[:,:,2]
+    ## From equation 6-17
+    theta = np.arccos( 0.5*((R-G)+(R-B)) / (np.sqrt((R-G)**2 + (R-B)*(G-B)) + 1e-8)
+    )
+    theta *= 180/np.pi # Convert the angle into degrees
+    ## From equation 6-16
+    H = np.copy(theta)
+    H[B>G] = 360-theta[B>G]
+    ## From equation 6-18
+    S = 1-3*np.min(rgb_image, axis=2)/np.sum(rgb_image, axis=2)
+    ## From equation 6-19
+    I = np.mean(rgb_image, axis=2)
+    ## return HSI image
+    hsi_image = np.stack([H,S,I], axis=2)
     return(hsi_image)
+
+hsi_image = rgb_to_hsi(image)
+hsi_image_box_aurora = rgb_to_hsi(image_box_aurora)
+hsi_image_box_foreground = rgb_to_hsi(image_box_foreground)
+
+plot_image_with_hists(hsi_image,"To hsi converted image")
+plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image")
+plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image")
+
+
 
 #########################################################################
 #                               4                                       #
@@ -129,6 +187,14 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
 
 #########################################################################
 #                               5                                       #
+#########################################################################
+
+#########################################################################
+#                               6                                       #
+#########################################################################
+
+#########################################################################
+#                               7                                       #
 #########################################################################
 
 
