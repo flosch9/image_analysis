@@ -87,9 +87,9 @@ def plot_image_with_hists(image, maintitel, title1 = "Image", title2 = "Red chan
     
     return()
 
-plot_image_with_hists(image,"Original image")
-plot_image_with_hists(image_box_aurora,"Selected region of aurora")
-plot_image_with_hists(image_box_foreground,"Selected region of foreground")
+#plot_image_with_hists(image,"Original image")
+#plot_image_with_hists(image_box_aurora,"Selected region of aurora")
+#plot_image_with_hists(image_box_foreground,"Selected region of foreground")
 
 
 #########################################################################
@@ -199,9 +199,9 @@ equalized_image_box_aurora = select_image_box(equalized_image, (260,60), (300,10
 equalized_image_box_foreground = select_image_box(equalized_image, (630,100), (150,1000))
 
 
-plot_image_with_hists(equalized_image, "Whole image with histogram equalization.")
-plot_image_with_hists(equalized_image_box_aurora, "Aurora region with histogram equalization.")
-plot_image_with_hists(equalized_image_box_foreground, "Foreground image with histogram equalization.")
+#plot_image_with_hists(equalized_image, "Whole image with histogram equalization.")
+#plot_image_with_hists(equalized_image_box_aurora, "Aurora region with histogram equalization.")
+#plot_image_with_hists(equalized_image_box_foreground, "Foreground image with histogram equalization.")
 
 
 
@@ -235,9 +235,9 @@ hsi_image = rgb_to_hsi(image)
 hsi_image_box_aurora = rgb_to_hsi(image_box_aurora)
 hsi_image_box_foreground = rgb_to_hsi(image_box_foreground)
 
-plot_image_with_hists(hsi_image,"To hsi converted image", "HSI-Image", "H Channel", "S Channel", "I channel")
-plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image", "HSI-Image", "H Channel", "S Channel", "I channel")
-plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image", "HSI-Image", "H Channel", "S Channel", "I channel")
+#plot_image_with_hists(hsi_image,"To hsi converted image", "HSI-Image", "H Channel", "S Channel", "I channel")
+#plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image", "HSI-Image", "H Channel", "S Channel", "I channel")
+#plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image", "HSI-Image", "H Channel", "S Channel", "I channel")
 
 
 
@@ -297,7 +297,7 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
         for j in range(whole_image.shape[1]):
             pixel = whole_image[i, j]
             difference = pixel - mean
-            # definition of distance sqrt
+            # definition of distance sqrt (with/without it?)
             dist = (np.dot(np.dot(difference.T, inv_covariance), difference))
             distance[i, j] = dist
 
@@ -341,7 +341,7 @@ def plot_segmentation(segemented_foreground, segemented_background, distance, ma
     axs[1].set_title(title2)
     axs[1].imshow(segemented_background)
     axs[2].set_title(title3)
-    axs[2].imshow(distance)
+    axs[2].imshow(distance, cmap = "gray")
    
     fig.tight_layout()
     plt.show()
