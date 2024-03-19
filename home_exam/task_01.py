@@ -67,43 +67,29 @@ image_box_aurora = select_image_box(image, (260,60), (300,1000))
 image_box_foreground = select_image_box(image, (630,100), (150,1000))
 
 # get histograms of color image
-# TODO check color range is it 255?
-# maybe use this later
-"""
-image_hist_r = np.histogram(image[:,:,0], bins = 255)
-image_hist_g = np.histogram(image[:,:,1], bins = 255)
-image_hist_b = np.histogram(image[:,:,2], bins = 255)
-
-image_box_aurora_hist_r = np.histogram(image_box_aurora[:,:,0], bins = 255)
-image_box_aurora_hist_g = np.histogram(image_box_aurora[:,:,1], bins = 255)
-image_box_aurora_hist_b = np.histogram(image_box_aurora[:,:,2], bins = 255)
-
-image_box_foreground_hist_r = np.histogram(image_box_foreground[:,:,0], bins = 255)
-image_box_foreground_hist_g = np.histogram(image_box_foreground[:,:,1], bins = 255)
-image_box_foreground_hist_b = np.histogram(image_box_foreground[:,:,2], bins = 255)
-"""
 
 # define function for plotting
-def plot_image_with_hists(image, titel,):
-    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 7))
-    fig.suptitle(titel)
+def plot_image_with_hists(image, maintitel, title1 = "Image", title2 = "Red channel", title3 = "Green channel", title4 = "Blue channel"):
 
-    axs[0,0].set_title("Image")
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(8, 7))
+    fig.suptitle(maintitel)
+
+    axs[0,0].set_title(title1)
     axs[0,0].imshow(image)
-    axs[0,1].set_title("Red channel")
+    axs[0,1].set_title(title2)
     axs[0,1].hist(image[:,:,0].flatten(), bins = 255)
-    axs[1,0].set_title("Green channel")
+    axs[1,0].set_title(title3)
     axs[1,0].hist(image[:,:,1].flatten(), bins = 255)
-    axs[1,1].set_title("Blue channel")
+    axs[1,1].set_title(title4)
     axs[1,1].hist(image[:,:,2].flatten(), bins = 255)
     fig.tight_layout()
     plt.show()
     
     return()
 
-plot_image_with_hists(image,"Original image")
-plot_image_with_hists(image_box_aurora,"Selected region of aurora")
-plot_image_with_hists(image_box_foreground,"Selected region of foreground")
+#plot_image_with_hists(image,"Original image")
+#plot_image_with_hists(image_box_aurora,"Selected region of aurora")
+#plot_image_with_hists(image_box_foreground,"Selected region of foreground")
 
 
 #########################################################################
@@ -114,20 +100,103 @@ plot_image_with_hists(image_box_foreground,"Selected region of foreground")
 #    return()
 
 # pre implemented functions (e.g. cv2) are also fine
+
+# image should be in hsi space !!!
+
+def rgb_to_hsi(rgb_image):
+
+    '''Function to convert an RGB image to an HSI image, from the exercises'''
+    ## Scale the image down to the range [0,1]
+    R,G,B = rgb_image[:,:,0],rgb_image[:,:,1],rgb_image[:,:,2]
+    ## From equation 6-17
+    theta = np.arccos( 0.5*((R-G)+(R-B)) / (np.sqrt((R-G)**2 + (R-B)*(G-B)) + 1e-8)
+    )
+    theta *= 180/np.pi # Convert the angle into degrees
+    ## From equation 6-16
+    H = np.copy(theta)
+    H[B>G] = 360-theta[B>G]
+    ## From equation 6-18
+    S = 1-3*np.min(rgb_image, axis=2)/np.sum(rgb_image, axis=2)
+    ## From equation 6-19
+    I = np.mean(rgb_image, axis=2)
+    ## return HSI image
+    hsi_image = np.stack([H,S,I], axis=2)
+    return(hsi_image)
+
+def hsi_to_rgb(hsi_image):
+
+    H,S,I = hsi_image[:,:,0], hsi_image[:,:,1], hsi_image[:,:,2]
+
+    if H < 0:
+        H += 2 * np.pi
+    elif H >= 2 * np.pi:
+        H -= 2 * np.pi
+
+    if H < 2 * np.pi / 3:
+        B = I * (1 - S)
+        R = I * (1 + (S * np.cos(H)) / (np.cos(np.pi / 3 - H)))
+        G = 3 * I - (R + B)
+    elif H < 4 * np.pi / 3:
+        H -= 2 * np.pi / 3
+        R = I * (1 - S)
+        G = I * (1 + (S * np.cos(H)) / (np.cos(np.pi / 3 - H)))
+        B = 3 * I - (R + G)
+    else:
+        H -= 4 * np.pi / 3
+        G = I * (1 - S)
+        B = I * (1 + (S * np.cos(H)) / (np.cos(np.pi / 3 - H)))
+        R = 3 * I - (G + B)
+
+    rgb_image = np.stack([R,G,B], axis=2)
+
+    return(rgb_image)
+
 def hist_equalize(image):
+    # takes rgb image as input and gives rgb image as output
+
+    # Convert the image to YUV color space
+    # hsi not cv implemented
+    yuv_image = cv.cvtColor(image, cv.COLOR_RGB2YUV)
+    
+    # Apply histogram equalization to the Y channel
+    yuv_image[:,:,0] = cv.equalizeHist(yuv_image[:,:,0])
+    
+    # Convert the image back to RGB color space
+    equalized_image = cv.cvtColor(yuv_image, cv.COLOR_YUV2RGB)
+    
+    return(equalized_image)
+
+def _hist_equalize(image):
+    # old and "wrong function for only rgb channels"
     new_image = np.zeros(image.shape)
+
+    # not every channel but only the y channel !!!
     for channel in range(3):
-        hist, _ = np.histogram(image[:,:,channel].flatten(), 256, [0, 255])
-        cdf = hist.cumsum()
-        cdf_norm = ((cdf - cdf.min()) * 255) / (cdf.max() - cdf.min())
-        channel_new = cdf_norm[image[:,:,channel].flatten()]
-        new_image[:,:,channel] = np.reshape(channel_new, image[:,:,channel].shape)
+
+        # prebuild functions allowed
+        equalized_channel = cv.equalizeHist(image[:,:,channel]) 
+        #hist, _ = np.histogram(image[:,:,channel].flatten(), 256, [0, 256])
+        #cdf = np.cumsum(hist)
+        #cdf_norm = ((cdf - cdf.min()) * 255) / (cdf.max() - cdf.min())
+
+        new_image[:,:,channel] = equalized_channel
+        # unnecessary
+        #channel_new = cdf_norm[image[:,:,channel].flatten()]
+        #new_image[:,:,channel] = np.reshape(channel_new, image[:,:,channel].shape)
+
     return(new_image)
 
 
-plot_image_with_hists(hist_equalize(image), "Whole image with histogram equalization.")
-plot_image_with_hists(hist_equalize(image_box_aurora), "Aurora region with histogram equalization.")
-plot_image_with_hists(hist_equalize(image_box_foreground), "Foreground image with histogram equalization.")
+
+
+equalized_image = hist_equalize(image)
+equalized_image_box_aurora = hist_equalize(image_box_aurora)
+equalized_image_box_foreground = hist_equalize(image_box_foreground)
+
+
+#plot_image_with_hists(equalized_image, "Whole image with histogram equalization.")
+#plot_image_with_hists(equalized_image_box_aurora, "Aurora region with histogram equalization.")
+#plot_image_with_hists(equalized_image_box_foreground, "Foreground image with histogram equalization.")
 
 
 
@@ -137,6 +206,8 @@ plot_image_with_hists(hist_equalize(image_box_foreground), "Foreground image wit
 
 # pre implemented functions (e.g. cv2) are also fine
 def rgb_to_hsi(rgb_image):
+
+
     '''Function to convert an RGB image to an HSI image, from the exercises'''
     ## Scale the image down to the range [0,1]
     R,G,B = rgb_image[:,:,0],rgb_image[:,:,1],rgb_image[:,:,2]
@@ -159,9 +230,9 @@ hsi_image = rgb_to_hsi(image)
 hsi_image_box_aurora = rgb_to_hsi(image_box_aurora)
 hsi_image_box_foreground = rgb_to_hsi(image_box_foreground)
 
-plot_image_with_hists(hsi_image,"To hsi converted image")
-plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image")
-plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image")
+#plot_image_with_hists(hsi_image,"To hsi converted image", "HSI-Image", "H Channel", "S Channel", "I channel")
+#plot_image_with_hists(hsi_image_box_aurora,"To hsi converted aurora image", "HSI-Image", "H Channel", "S Channel", "I channel")
+#plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground image", "HSI-Image", "H Channel", "S Channel", "I channel")
 
 
 
@@ -169,25 +240,112 @@ plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground imag
 #                               4                                       #
 #########################################################################
 
+
+
+#########################################################################
+#                               5                                       #
+#########################################################################
+
 def mahalanobis_distance(z, a, c):
+    #distance = (z-a).T*np.linalg.inv(c)*(z-a)
+    # c is just a scalar?
     distance = (z-a).T*c*(z-a)
     return(distance)
 
-def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
-    a_mean = np.mean(foreground_image)
-    covariance = 1
+def _image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
+    a_mean = np.mean(foreground_image, axis=(0, 1))
+
+    print(a_mean.shape)
+    covariance = np.cov(foreground_image.reshape(-1, 1), rowvar=False)
+
 
     distance = mahalanobis_distance(whole_image, a_mean, covariance)
+
+    plt.imshow(distance)
+    plt.show()
     
     selected_image = np.where(distance > threshold, whole_image)
 
     return(selected_image, distance)
 
 
+def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
+    # Compute the inverse of the covariance matrix
+    # modification of shape .1, 1 and cov as scalar is better
+    covariance = np.cov(foreground_image.reshape(-1, 3), rowvar=False)
+    mean = np.mean(foreground_image, axis=(0, 1))
+    print(np.amax(foreground_image)) # fix this for hsi image
+    print(np.amin(foreground_image))
+    print(foreground_image.reshape(-1, 3).shape)
 
-#########################################################################
-#                               5                                       #
-#########################################################################
+    inv_covariance = np.linalg.inv(covariance)
+    #inv_covariance = 1/covariance
+
+    #print(inv_covariance) #is nan for hsi
+
+    # Compute Mahalanobis distance for each pixel
+    distance = np.zeros_like(whole_image, dtype=np.float32)
+    for i in range(whole_image.shape[0]):
+        for j in range(whole_image.shape[1]):
+            pixel = whole_image[i, j]
+            difference = pixel - mean
+            dist = np.sqrt(np.dot(np.dot(difference.T, inv_covariance), difference))
+            distance[i, j] = dist
+
+    ####
+
+
+    
+
+    ####
+
+    print(np.amax(distance))
+    print(np.amin(distance))
+
+    ## EROR IN DISTNACE DEFINITION???
+    # Apply threshold to classify pixels as foreground or background
+    #segmented_foreground = np.zeros(whole_image.shape)
+    #segmented_background = np.zeros(whole_image.shape)
+    print(distance.shape)
+    segmented_foreground = np.where(distance < threshold, whole_image, 255)
+    segmented_background = np.where(distance >= threshold, whole_image, 255)
+    #segmented_foreground = whole_image[distance < threshold] #[distance < threshold]  # Foreground
+    #segmented_background = whole_image[distance >= threshold]   # Background
+
+    print(segmented_foreground.shape)
+
+    return(segmented_foreground, segmented_background, distance)
+
+
+def plot_segmentation(segemented_foreground, segemented_background, distance, maintitle = "Image segmentation", title1 = "Segemented foreground", title2 = "Segemented background", title3 = "Distance as 2d image"):
+
+    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 7))
+    fig.suptitle(maintitle)
+
+    axs[0].set_title(title1)
+    axs[0].imshow(segemented_foreground)
+    axs[1].set_title(title2)
+    axs[1].imshow(segemented_background)
+    axs[2].set_title(title3)
+    axs[2].imshow(distance)
+   
+    fig.tight_layout()
+    plt.show()
+    
+
+    return()
+
+#segmented_image, distance = image_select_mahalanobis_distance(image, image_box_foreground, threshold=2)
+
+#equalized_segmented_image, equalized_distance = image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold=2)
+
+#hsi_segmented_image, hsi_distance = image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=2)
+
+plot_segmentation(*image_select_mahalanobis_distance(image, image_box_foreground, threshold=12))
+plot_segmentation(*image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold=7))
+plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=2))
+
+
 
 #########################################################################
 #                               6                                       #
