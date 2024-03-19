@@ -106,17 +106,26 @@ def plot_image_with_hists(image, maintitel, title1 = "Image", title2 = "Red chan
 def rgb_to_hsi(rgb_image):
 
     '''Function to convert an RGB image to an HSI image, from the exercises'''
+    # for getting no number errors 
+    epsilon = 1e-5
     ## Scale the image down to the range [0,1]
     R,G,B = rgb_image[:,:,0],rgb_image[:,:,1],rgb_image[:,:,2]
     ## From equation 6-17
-    theta = np.arccos( 0.5*((R-G)+(R-B)) / (np.sqrt((R-G)**2 + (R-B)*(G-B)) + 1e-8)
-    )
+    # for handling right values
+    arg = 0.5*((R-G)+(R-B)) / (np.sqrt((R-G)**2 + (R-B)*(G-B))+ epsilon)
+
+    # important for having reasonabel values for arcos [-1,1]
+    arccos_argument = np.where(arg < -1, -1, arg)
+    arccos_argument = np.where(arg > 1, 1, arg)
+
+
+    theta = np.arccos( arccos_argument)
     theta *= 180/np.pi # Convert the angle into degrees
     ## From equation 6-16
     H = np.copy(theta)
     H[B>G] = 360-theta[B>G]
     ## From equation 6-18
-    S = 1-3*np.min(rgb_image, axis=2)/np.sum(rgb_image, axis=2)
+    S = 1-3*np.min(rgb_image, axis=2)/(np.sum(rgb_image, axis=2) + epsilon)
     ## From equation 6-19
     I = np.mean(rgb_image, axis=2)
     ## return HSI image
@@ -153,7 +162,7 @@ def hsi_to_rgb(hsi_image):
 
 
 # exercise 3 equalizatiojn
-def hist_equalize(image):
+def _hist_equalize(image):
     # takes rgb image as input and gives rgb image as output
 
     # Convert the image to YUV color space
@@ -168,25 +177,54 @@ def hist_equalize(image):
     
     return(equalized_image)
 
+# from exercises
 def _hist_equalize(image):
+    #### Function to perform histogram equalization
+    ## Initialize the output image as a copy of the input
+    new_image = np.copy(image)
+    ## Find the image shape and all the unique pixel values
+    M,N = image.shape
+    pixel_values = np.unique(image)
+    ## Initialize the probability masses of each pixel value
+    p_r = []
+    ## Loop through all the pixel values in the image
+    for rk in pixel_values:
+        ## Compute the probability mass of the current pixel value
+        # and store it in the probability mass vector
+        p_rk = (image==rk).sum() / (M*N)
+        p_r.append(p_rk)
+        ## Compute the transformed pixel value based on equation
+        # (3-15) from the textbook
+        s_k = 255 * sum(p_r)
+        ## Replace the pixel values in the output image with the
+        # transformed intensity
+        new_image[image==rk] = s_k
+    return(new_image)
+
+def hist_equalize(image):
     # old and "wrong function for only rgb channels"
     new_image = np.zeros(image.shape)
 
     # not every channel but only the y channel !!!
     for channel in range(3):
-
         # prebuild functions allowed
-        equalized_channel = cv.equalizeHist(image[:,:,channel]) 
+        # int doesnt work still recognized as float
+        # also tried .astype
+        equalized_channel = cv.equalizeHist(image[:,:,channel])
+       
         #hist, _ = np.histogram(image[:,:,channel].flatten(), 256, [0, 256])
         #cdf = np.cumsum(hist)
         #cdf_norm = ((cdf - cdf.min()) * 255) / (cdf.max() - cdf.min())
+        
+        #
 
-        new_image[:,:,channel] = equalized_channel
+        new_image[:,:,channel] = equalized_channel#/255
         # unnecessary
         #channel_new = cdf_norm[image[:,:,channel].flatten()]
         #new_image[:,:,channel] = np.reshape(channel_new, image[:,:,channel].shape)
 
-    return(new_image)
+    # astype int is important
+    return(new_image.astype(int))
 
 
 
@@ -209,27 +247,6 @@ equalized_image_box_foreground = select_image_box(equalized_image, (630,100), (1
 #                               3                                       #
 #########################################################################
 
-# pre implemented functions (e.g. cv2) are also fine
-def rgb_to_hsi(rgb_image):
-
-
-    '''Function to convert an RGB image to an HSI image, from the exercises'''
-    ## Scale the image down to the range [0,1]
-    R,G,B = rgb_image[:,:,0],rgb_image[:,:,1],rgb_image[:,:,2]
-    ## From equation 6-17
-    theta = np.arccos( 0.5*((R-G)+(R-B)) / (np.sqrt((R-G)**2 + (R-B)*(G-B)) + 1e-8)
-    )
-    theta *= 180/np.pi # Convert the angle into degrees
-    ## From equation 6-16
-    H = np.copy(theta)
-    H[B>G] = 360-theta[B>G]
-    ## From equation 6-18
-    S = 1-3*np.min(rgb_image, axis=2)/np.sum(rgb_image, axis=2)
-    ## From equation 6-19
-    I = np.mean(rgb_image, axis=2)
-    ## return HSI image
-    hsi_image = np.stack([H,S,I], axis=2)
-    return(hsi_image)
 
 hsi_image = rgb_to_hsi(image)
 hsi_image_box_aurora = rgb_to_hsi(image_box_aurora)
@@ -301,10 +318,6 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
             dist = (np.dot(np.dot(difference.T, inv_covariance), difference))
             distance[i, j] = dist
 
-    print("\nDistance")
-    print(distance.shape)
-    print(np.amax(distance)) # fix this for hsi image
-    print(np.amin(distance))
 
     ####
 
@@ -312,7 +325,7 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
     
 
     ####
-
+    print("\nRegion of distance, max/min")
     print(np.amax(distance))
     print(np.amin(distance))
 
@@ -326,7 +339,6 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold):
     #segmented_foreground = whole_image[distance < threshold] #[distance < threshold]  # Foreground
     #segmented_background = whole_image[distance >= threshold]   # Background
 
-    print(segmented_foreground.shape)
 
     return(segmented_foreground, segmented_background, distance)
 
@@ -355,9 +367,9 @@ def plot_segmentation(segemented_foreground, segemented_background, distance, ma
 
 #hsi_segmented_image, hsi_distance = image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=2)
 
-plot_segmentation(*image_select_mahalanobis_distance(image, image_box_foreground, threshold=12))
-plot_segmentation(*image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold=7))
-plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=2))
+plot_segmentation(*image_select_mahalanobis_distance(image, image_box_foreground, threshold=550))
+plot_segmentation(*image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold=80))
+plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=8))
 
 
 
