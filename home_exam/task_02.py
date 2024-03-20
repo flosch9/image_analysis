@@ -109,7 +109,7 @@ for channel in range(image.shape[2]):
     #filters[511:513,:490,2] = 0
     #filters[511:513,520:,2] = 0
 
-    ft_channel_filtered = ft_channel * filters[:,:,channel]
+    ft_channel_filtered = ft_channel * filters[:,:,channel]+1e-6
 
     back_ft = np.fft.ifft2(np.fft.fftshift(ft_channel_filtered))
 
@@ -195,7 +195,7 @@ for channel in range(image.shape[2]):
     #filters[503:506,:490,2] = 0
     #filters[503:506,520:,2] = 0
 
-    ft_channel_filtered = ft_channel * filters[:,:,channel]
+    ft_channel_filtered = ft_channel * filters[:,:,channel]+1e-6
 
     back_ft = np.fft.ifft2(np.fft.fftshift(ft_channel_filtered))
 
@@ -229,7 +229,7 @@ image_final_result_2 = np.zeros(image_filtered.shape)
 
 def get_circle_mask(mask, radius, value = 0, center = None):
 
-    inner_center_radius = 2
+    inner_center_radius = 5
 
     if center == None:
         center = (int(mask.shape[0]/2), int(mask.shape[1]/2))
@@ -316,18 +316,25 @@ def harmonic_mean_filter(im:np.ndarray, filter_shape:tuple):
 #kernelsize = 21
 #image_final_result_2 = cv.blur(image_filtered, (kernelsize, kernelsize))
 
-kernelsize = 19
+
 #image_final_result_2 = cv.medianBlur(image_filtered, kernelsize)
 #image_final_result_2 = contraharmonic_mean_filter(image_filtered, (kernelsize, #kernelsize))
 
+
+kernelsize = 3
+radius = 100
+"""
 image_final_result_2 = np.copy(image_filtered)
 for channel in range(image_filtered.shape[2]):
     
     image_channel = image[:,:,channel]
 
-    blurred_channel = harmonic_mean_filter(image_channel, (kernelsize, kernelsize))
+    #blurred_channel = harmonic_mean_filter(image_channel, (kernelsize, kernelsize))
+    blurred_channel = blurring_ft_space(image_channel, radius)
 
     image_final_result_2[:,:,channel] = blurred_channel
+"""
+image_final_result_2 = cv.medianBlur(image_filtered, kernelsize)
 
 
 #############################
@@ -354,9 +361,9 @@ kernel = np.array([[0,-1,0],
                    [-1,5,-1],
                    [0,-1,0]])
 
-enhanced_image = cv.filter2D(image_final_result_1, -1, kernel)
+enhanced_image_1 = cv.filter2D(image_final_result_1, -1, kernel)
 
-plt.imshow(enhanced_image)
+plt.imshow(enhanced_image_1)
 plt.show()
 
 #also gaus blur and mask subtracted add to image possiple
@@ -422,23 +429,20 @@ def sharpen_ft_space(image, radius):
 
     return(postprocess(sharpened_image, image))
 
-enhanced_image = np.copy(image_final_result_2)
+enhanced_image_2 = np.copy(image_final_result_2)
 
 #image_final_result_2 = image_filtered
 
 for channel in range(image_final_result_2.shape[2]):
     image_channel = image_final_result_2[:,:,channel]
 
-    sharpened_channel = sharpen_ft_space(image_channel, radius = 5)
+    sharpened_channel = sharpen_ft_space(image_channel, radius = 8)
 
-    enhanced_image[:,:,channel] = sharpened_channel
+    enhanced_image_2[:,:,channel] = sharpened_channel
 
 
 
-plt.imshow(image_final_result_2)
-plt.show()
-
-plt.imshow(enhanced_image)
+plt.imshow(enhanced_image_2)
 plt.show()
 
 
