@@ -6,6 +6,7 @@ import skimage
 import time
 from PIL import Image 
 from scipy import ndimage
+from scipy import signal
 
 
 
@@ -163,16 +164,6 @@ for channel in range(image.shape[2]):
 
 """
 
-def contraharmonic_mean_filter(image, order, filtersize = 3):
-
-
-    filtered_image = 1
-
-    return(filtered_image)
-
-def median_filter(image, kernelsize):
-    filtered_image = cv.medianBlur(image, kernelsize)
-    return(filtered_image)
 
 filters = np.ones(image.shape)
 
@@ -227,11 +218,122 @@ plt.close()
 
 # remove salt noise
 # better blur in ft domain with low pass filter!
-kernelsize = 5
-image_final_result_2 = cv.medianBlur(image_filtered, kernelsize)
+# in spatial domain not optimal
+#kernelsize = 5
+#image_final_result_2 = cv.medianBlur(image_filtered, kernelsize)
+
+#############################
+
+image_final_result_2 = np.zeros(image_filtered.shape)
+
+
+def get_circle_mask(mask, radius, value = 0, center = None):
+
+    inner_center_radius = 2
+
+    if center == None:
+        center = (int(mask.shape[0]/2), int(mask.shape[1]/2))
+
+    circle_mask = np.copy(mask)
+
+    rows, cols = mask.shape
+
+    for row in range(rows):
+        for col in range(cols):
+            r = np.sqrt((row-center[0])**2 + (col-center[0])**2)
+
+            if r <= radius:
+                circle_mask[row, col] = value if r > inner_center_radius else 1
+
+    return(circle_mask)
+
+def blurring_ft_space(channel, radius):
+# fourier transform
+    ft_channel = np.fft.fftshift(np.fft.fft2(preprocess(channel)))
+    # filter (high pass filter!)
+    rows, cols = ft_channel.shape
+    mask = np.zeros((rows, cols))
+    
+    mask = get_circle_mask(mask, radius, value = 1)
+    #plt.imshow(mask)
+    #plt.show()
+    # apply filter
+    ft_channel_sharpened = ft_channel * mask
+    # back transform
+    blurred_channel = np.fft.ifft2(np.fft.ifftshift(ft_channel_sharpened))
+    #sharpened_channel = postprocess(sharpened_channel, channel)
+
+    return(postprocess(blurred_channel, channel))
+
+
+"""
+image_final_result_2 = np.copy(image_filtered)
+for channel in range(image_filtered.shape[2]):
+    
+    image_channel = image[:,:,channel]
+
+    blurred_channel = blurring_ft_space(image_channel, radius = 10)
+
+    image_final_result_2[:,:,channel] = blurred_channel
+"""
+
+"""
+def contraharmonic_mean_filter(image, kernelsize : tuple, Q):
+
+    filtered_image = np.zeros(image.shape)
+    rows, cols = image.shape
+
+    padded_image = np.pad(image, [int(kernelsize[0]/2), int(kernelsize[1]/2)])
+
+    for row in range(rows):
+        for col in range(cols):
+            filtered_image[row, col] = np.sum()/np.sum(image[row:row+kernelsize, col:col+kernelsize])    
+
+    return(filtered_image)
+
+"""
+
+def harmonic_mean_filter(im:np.ndarray, filter_shape:tuple):
+    '''
+    Harmonic mean filter function.
+    '''
+    ## Define the convolution filter kernel
+    kernel = np.ones(filter_shape) / np.prod(filter_shape)
+
+    ## Compute the reciprocal of the pixel values
+    # Add a very small value to avoid dividing by zero
+    recip_im = 1/(im + 1e-8)
+    ## Take the arithmetic mean of the reciprocal values
+    recip_filtered_im = signal.convolve2d(recip_im, kernel, mode="same", boundary="wrap")
+    ## Take the reciprocal of the arithmetic meaned reciprocal values
+    harmonic_filtered_im = 1/recip_filtered_im
+    return harmonic_filtered_im
+
+
+
+
+# both not good
+#kernelsize = 21
+#image_final_result_2 = cv.blur(image_filtered, (kernelsize, kernelsize))
+
+kernelsize = 19
+#image_final_result_2 = cv.medianBlur(image_filtered, kernelsize)
+#image_final_result_2 = contraharmonic_mean_filter(image_filtered, (kernelsize, #kernelsize))
+
+image_final_result_2 = np.copy(image_filtered)
+for channel in range(image_filtered.shape[2]):
+    
+    image_channel = image[:,:,channel]
+
+    blurred_channel = harmonic_mean_filter(image_channel, (kernelsize, kernelsize))
+
+    image_final_result_2[:,:,channel] = blurred_channel
+
+
+#############################
 
 plt.imshow(image_final_result_2)
-#plt.show()
+plt.show()
 plt.close()
 
 #########################################################################
@@ -296,30 +398,42 @@ plt.show()
 print("\nEnhancement of image 2:")
 
 
-def sharpen_ft_space(channel):
+
+
+def sharpen_ft_space(image, radius):
     # fourier transform
-    ft_channel = np.fft.fftshift(np.fft.fft2(preprocess(channel)))
+    ft_image = np.fft.fftshift(np.fft.fft2(preprocess(image)))
     # filter (high pass filter!)
-    rows, cols = ft_channel.shape
+    rows, cols = ft_image.shape
     mask = np.ones((rows, cols))
-    radius = 60
-    mask[int(rows/2 - radius):int(rows/2 + radius), int(cols/2 - radius):int(cols/2 + radius)] = 0
+    # here change mask
+    
+    #mask[int(rows/2 - radius):int(rows/2 + radius), int(cols/2 - radius):int(cols/2 + radius)] = 0
+
+    mask = get_circle_mask(mask, radius)
+    #plt.imshow(mask)
+    #plt.show()
+
     # apply filter
-    ft_channel_sharpened = ft_channel * mask
+    ft_sharpened_image = ft_image * mask
     # back transform
-    sharpened_channel = np.fft.ifft2(np.fft.ifftshift(ft_channel_sharpened))
+    sharpened_image = np.fft.ifft2(np.fft.ifftshift(ft_sharpened_image))
     #sharpened_channel = postprocess(sharpened_channel, channel)
 
-    return(postprocess(sharpened_channel, channel))
+    return(postprocess(sharpened_image, image))
 
 enhanced_image = np.copy(image_final_result_2)
+
+#image_final_result_2 = image_filtered
 
 for channel in range(image_final_result_2.shape[2]):
     image_channel = image_final_result_2[:,:,channel]
 
-    sharpened_channel = sharpen_ft_space(image_channel)
+    sharpened_channel = sharpen_ft_space(image_channel, radius = 5)
 
     enhanced_image[:,:,channel] = sharpened_channel
+
+
 
 plt.imshow(image_final_result_2)
 plt.show()

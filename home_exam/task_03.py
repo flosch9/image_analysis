@@ -50,11 +50,11 @@ for pad_width in [1,2]:
     # calculate convolution and correlation
     # in mode "valid" the output consists only of those elements that 
     # do not rely on the zero-padding
-    convolution_g_one = signal.convolve2d(padded_f, g_one, mode = "valid" )
-    convolution_g_two = signal.convolve2d(padded_f, g_two, mode = "valid" )
+    convolution_g_one = signal.convolve2d(padded_f, g_one, mode = "valid")
+    convolution_g_two = signal.convolve2d(padded_f, g_two, mode = "valid")
 
-    correlation_g_one = signal.correlate2d(padded_f, g_one, mode = "valid" )
-    correlation_g_two = signal.correlate2d(padded_f, g_two, mode = "valid" )
+    correlation_g_one = signal.correlate2d(padded_f, g_one, mode = "valid")
+    correlation_g_two = signal.correlate2d(padded_f, g_two, mode = "valid")
 
     # printing results
     print("\nConvolution with g_1:\n")

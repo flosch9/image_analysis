@@ -367,6 +367,8 @@ def plot_segmentation(segemented_foreground, segemented_background, distance, ma
 
 #hsi_segmented_image, hsi_distance = image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=2)
 
+
+
 plot_segmentation(*image_select_mahalanobis_distance(image, image_box_foreground, threshold=550))
 plot_segmentation(*image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold=80))
 plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=8))
