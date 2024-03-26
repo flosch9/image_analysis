@@ -222,7 +222,6 @@ plot_image_with_hists(hsi_image_box_foreground,"To hsi converted foreground imag
 #                               5                                       #
 #########################################################################
 
-print("number5")
 def mahalanobis_distance(z, a, c):
     # pixel z
     # mean a
@@ -231,26 +230,15 @@ def mahalanobis_distance(z, a, c):
     return(distance)
 
 
-
 def image_select_mahalanobis_distance(whole_image, foreground_image, threshold_percent):
     # Compute the inverse of the covariance matrix
     # modification of shape .1, 1 and cov as scalar is better
     covariance = np.cov(foreground_image.reshape(-1, 3), rowvar=False)
     mean = np.mean(foreground_image, axis=(0, 1))
-    print(np.amax(foreground_image)) # fix this for hsi image
-    print(np.amin(foreground_image))
-
-    
-
-    print(foreground_image.reshape(-1, 3).shape)
 
     inv_covariance = np.linalg.inv(covariance)
-    #inv_covariance = 1/covariance
-
-    #print(inv_covariance) #is nan for hsi
-
+ 
     # Compute Mahalanobis distance for each pixel
-    
     distance = np.zeros_like(whole_image, dtype=np.float32)
     for i in range(whole_image.shape[0]):
         for j in range(whole_image.shape[1]):
@@ -260,36 +248,20 @@ def image_select_mahalanobis_distance(whole_image, foreground_image, threshold_p
             dist = np.sqrt((np.dot(np.dot(difference.T, inv_covariance), difference)))
             distance[i, j] = dist
 
-    
-    ####
-            
-    #distance = np.array([[mahalanobis_distance(whole_image[i,j], mean, inv_covariance) #for j in range(whole_image.shape[1])] for i in range(whole_image.shape[0])])
 
-
-    print(distance)
-
-    ####
     print("\nRegion of distance, max/min")
     print(np.amax(distance))
     print(np.amin(distance))
 
     threshold = threshold_percent * np.amax(distance)
 
-    ## EROR IN DISTNACE DEFINITION???
-    # Apply threshold to classify pixels as foreground or background
-    #segmented_foreground = np.zeros(whole_image.shape)
-    #segmented_background = np.zeros(whole_image.shape)
-    print(distance.shape)
-    segmented_foreground = np.where(distance < threshold, whole_image, 255)
-    segmented_background = np.where(distance >= threshold, whole_image, 255)
-    #segmented_foreground = whole_image[distance < threshold] #[distance < threshold]  # Foreground
-    #segmented_background = whole_image[distance >= threshold]   # Background
-
-
+    segmented_foreground = np.where(distance >= threshold, whole_image, 255)
+    segmented_background = np.where(distance < threshold, whole_image, 255)
+  
     return(segmented_foreground, segmented_background, distance)
 
 
-def plot_segmentation(segemented_foreground, segemented_background, distance, maintitle = "Image segmentation", title1 = "Segemented foreground", title2 = "Segemented background", title3 = "Distance as 2d image"):
+def plot_segmentation(segemented_foreground, segemented_background, distance, maintitle = "Image segmentation", title1 = "Segemented foreground", title2 = "Segemented background", title3 = "Distance as 2d image", savename : str = None, showplot : bool = True):
 
     fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 7))
     fig.suptitle(maintitle)
@@ -302,9 +274,15 @@ def plot_segmentation(segemented_foreground, segemented_background, distance, ma
     axs[2].imshow(distance, cmap = "gray")
    
     fig.tight_layout()
-    plt.show()
     
-
+    if savename != None:
+        plt.savefig(savename)
+    
+    if showplot:
+        plt.show()
+    
+    plt.close()
+    
     return()
 
 #segmented_image, distance = image_select_mahalanobis_distance(image, image_box_foreground, threshold=2)
@@ -313,16 +291,16 @@ def plot_segmentation(segemented_foreground, segemented_background, distance, ma
 
 #hsi_segmented_image, hsi_distance = image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold=2)
 
-#threshold in % of max distance
+# threshold in % of max distance
 threshold_image = 0.2
 threshold_equalized_image = 0.3
 threshold_hsi_image = 0.2
 
 
 
-plot_segmentation(*image_select_mahalanobis_distance(image, image_box_foreground, threshold_image))
-plot_segmentation(*image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold_equalized_image))
-plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold_hsi_image))
+plot_segmentation(*image_select_mahalanobis_distance(image, image_box_foreground, threshold_image), savename="task01_e_image_segementation.png")
+plot_segmentation(*image_select_mahalanobis_distance(equalized_image, equalized_image_box_foreground, threshold_equalized_image), savename="task01_e_equalized_segementation.png")
+plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_foreground, threshold_hsi_image), savename="task01_e_hsi_segementation.png")
 
 
 
@@ -331,24 +309,13 @@ plot_segmentation(*image_select_mahalanobis_distance(hsi_image, hsi_image_box_fo
 #########################################################################
 
 
-
 def image_select_mahalanobis_distance_improved(whole_image, foreground_image, threshold_percent):
     # Compute the inverse of the covariance matrix
     # modification of shape .1, 1 and cov as scalar is better
     covariance = np.cov(foreground_image.reshape(-1, 3), rowvar=False)
     mean = np.mean(foreground_image, axis=(0, 1))
-    print(np.amax(foreground_image)) # fix this for hsi image
-    print(np.amin(foreground_image))
-
-    
-
-    print(foreground_image.reshape(-1, 3).shape)
-
+  
     inv_covariance = np.linalg.inv(covariance)
-    #inv_covariance = 1/covariance
-
-    #print(inv_covariance) #is nan for hsi
-
 
     # Compute Mahalanobis distance for each pixel
     distance = np.zeros_like(whole_image, dtype=np.float32)
@@ -360,65 +327,25 @@ def image_select_mahalanobis_distance_improved(whole_image, foreground_image, th
             dist = np.sqrt((np.dot(np.dot(difference.T, inv_covariance), difference)))
             distance[i, j] = dist
 
-
-    ####
-
-    #plt.imshow(distance, cmap = "gray", vmin = 0, vmax = 255)
-    #plt.show()
-    
-
-    ####
     print("\nRegion of distance, max/min")
     print(np.amax(distance))
     print(np.amin(distance))
 
     threshold = threshold_percent * np.amax(distance)
 
-    ## modification2:
-
-    # maybe sharpening the image
-
     #distance = cv.GaussianBlur(distance, (31,31),0)
     distance = cv.blur(distance, (41,41))
 
-    #
-
-    ## EROR IN DISTNACE DEFINITION???
-    # Apply threshold to classify pixels as foreground or background
-    #segmented_foreground = np.zeros(whole_image.shape)
-    #segmented_background = np.zeros(whole_image.shape)
-    print(distance.shape)
-    segmented_foreground = np.where(distance < threshold, whole_image, 255)
-    segmented_background = np.where(distance >= threshold, whole_image, 255)
-    #segmented_foreground = whole_image[distance < threshold] #[distance < threshold]  # Foreground
-    #segmented_background = whole_image[distance >= threshold]   # Background
-
+    segmented_foreground = np.where(distance >= threshold, whole_image, 255)
+    segmented_background = np.where(distance < threshold, whole_image, 255)
 
     return(segmented_foreground, segmented_background, distance)
 
 
-def plot_segmentation(segemented_foreground, segemented_background, distance, maintitle = "Image segmentation", title1 = "Segemented foreground", title2 = "Segemented background", title3 = "Distance as 2d image"):
 
-    fig, axs = plt.subplots(nrows=3, ncols=1, figsize=(8, 7))
-    fig.suptitle(maintitle)
-
-    axs[0].set_title(title1)
-    axs[0].imshow(segemented_foreground)
-    axs[1].set_title(title2)
-    axs[1].imshow(segemented_background)
-    axs[2].set_title(title3)
-    axs[2].imshow(distance, cmap = "gray")
-   
-    fig.tight_layout()
-    plt.show()
-    
-    return()
-
-
-plot_segmentation(*image_select_mahalanobis_distance_improved(image, image_box_foreground, threshold_image))
-plot_segmentation(*image_select_mahalanobis_distance_improved(equalized_image, equalized_image_box_foreground, threshold_equalized_image))
-plot_segmentation(*image_select_mahalanobis_distance_improved(hsi_image, hsi_image_box_foreground, threshold_hsi_image))
-
+plot_segmentation(*image_select_mahalanobis_distance_improved(image, image_box_foreground, threshold_image), savename="task01_f_image_segementation_improved.png")
+plot_segmentation(*image_select_mahalanobis_distance_improved(equalized_image, equalized_image_box_foreground, threshold_equalized_image), savename="task01_f_equalized_segementation_improved.png")
+plot_segmentation(*image_select_mahalanobis_distance_improved(hsi_image, hsi_image_box_foreground, threshold_hsi_image), savename="task01_f_hsi_segementation_improved.png")
 
 end_time = time.time()
 print("Completetd in {}s.".format(end_time-start_time))
