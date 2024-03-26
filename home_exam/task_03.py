@@ -50,6 +50,8 @@ for pad_width in [1,2]:
     # calculate convolution and correlation
     # in mode "valid" the output consists only of those elements that 
     # do not rely on the zero-padding
+    # in mode "full" the output is the full discrete linear 
+    # cross-correlation of the inputs
     convolution_g_one = signal.convolve2d(padded_f, g_one, mode = "valid")
     convolution_g_two = signal.convolve2d(padded_f, g_two, mode = "valid")
 
@@ -70,11 +72,11 @@ for pad_width in [1,2]:
     # and correlation are the same for a flipped (180 degree rotated) filter
     print("\nNow the same but with flipped filters (rotation of 180 degree) :")
 
-    convolution_g_one_flipped = signal.convolve2d(padded_f, g_one_flipped, mode = "valid" )
-    convolution_g_two_flipped = signal.convolve2d(padded_f, g_two_flipped, mode = "valid" )
+    convolution_g_one_flipped = signal.convolve2d(padded_f, g_one_flipped, mode = "full" )
+    convolution_g_two_flipped = signal.convolve2d(padded_f, g_two_flipped, mode = "full" )
 
-    correlation_g_one_flipped = signal.correlate2d(padded_f, g_one_flipped, mode = "valid" )
-    correlation_g_two_flipped = signal.correlate2d(padded_f, g_two_flipped, mode = "valid" )
+    correlation_g_one_flipped = signal.correlate2d(padded_f, g_one_flipped, mode = "full" )
+    correlation_g_two_flipped = signal.correlate2d(padded_f, g_two_flipped, mode = "full" )
 
     print("\nConvolution with flipped g_1:\n")
     print(convolution_g_one_flipped)
